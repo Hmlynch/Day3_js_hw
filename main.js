@@ -1,39 +1,42 @@
-document.querySelector('#searchBtn').addEventListener("click", getRacingData);
+let standingsBoxEl = document.getElementById('standingsBox')
 
-function getRacingData(e) {
-    const season = document.querySelector('season').value
-    const round = document.querySelector('round').value
+const getRacingData = async function(season=2022, round=3) {
+    try {
+        const response = await fetch(`https://ergast.com/api/f1/${season}/${round}/driverStandings.json`)
+        const racingData = await response.json()
+        
+        const StandingsTableData = racingData.MRData.StandingsTable
+        
+        const StandingsListsData = StandingsTableData.StandingsLists[0]
+        // console.log(StandingsListsData)
+        const DriverStandingsData = StandingsListsData.DriverStandings
+        // console.log(DriverStandingsData)
+        for (let i=0; i<7; i++){
+            displayRacingData(DriverStandingsData[i])
+        }
+    }
+    catch (err) {
+        console.log("There was an error!")
+        console.log(err)
+    }
+}
 
-    fetch(`https://ergast.com/api/f1/${season}/${round}/driverStandings.json`)
-        .then((response) => response.json())
-        .then((data) => {
-            document.querySelector("standingBox").innerHTML = `
-                <table class="table table-dark table-striped">
-                <thead>
-                    <tr>
-                    <th scope="col">Position</th>
-                    <th scope="col">name</th>
-                    <th scope="col">Nationality</th>
-                    <th scope="col">Sponsor</th>
-                    <th scope="col">Points</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                    <td>${data.MRData.StandingsTable.StandingsLists.DriverStandings.position}</td>
-                    <td>${data.MRData.StandingsTable.StandingsLists.DriverStandings.Driver.familyName}</td>
-                    <td>${data.MRData.StandingsTable.StandingsLists.DriverStandings.Driver.nationality}</td>
-                    <td>${data.MRData.StandingsTable.StandingsLists.DriverStandings.Constructors.constructorId}</td>
-                    <td>${data.MRData.StandingsTable.StandingsLists.DriverStandings.points}</td>
-                    </tr>
-                </tbody>
-                </table>
-            `;
-        })
-        .catch((err) => {
-            console.log("No season has occured.", err);
-        });
+function displayRacingData(driver) {
+    // let standingBoxEl = document.getElementsByTagName('tbdoy')
+    console.log(driver.constructors)
+    standingsBoxEl.innerHTML += `
+    <tr>
+        <td>${driver.position}</td>
+        <td>${driver.Driver.familyName}</td>
+        <td>${driver.Driver.nationality}</td>
+        <td>${driver.Constructors[0].constructorId}</td>
+        <td>${driver.points}</td>
+    </tr>
+        `
+}
 
-    e.preventDefault();
-}   
+function searchData(){
     
+}
+
+(async () => await getRacingData())()
